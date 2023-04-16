@@ -1,7 +1,30 @@
+require('dotenv').config()
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require('helpers/db');
-
 const User = db.User;
+
+module.exports = {
+	authenticate,
+	getAll,
+	getById,
+	create,
+	update,
+	delete: _delete,
+};
+
+async function authenticate({ username, password }) {
+	const user = await User.findOne({ username });
+	if (user && bcrypt.compareSync(password, user.hash)) {
+		const token = jwt.sign({ sub: user.id }, process.env.SECRET, {
+			expiresIn: '7d',
+		});
+		return {
+			...user.toJSON(),
+			token,
+		};
+	}
+}
 
 async function getAll() {
 	return User.find();
@@ -48,11 +71,3 @@ async function update(id, userParam) {
 async function _delete(id) {
 	await User.findByIdAndRemove(id);
 }
-
-module.exports = {
-	getAll,
-	getById,
-	create,
-	update,
-	delete: _delete,
-};

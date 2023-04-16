@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const userService = require('./user-service');
 
+router.post('/authenticate', authenticate);
+router.post('/register', register);
 router.get('/', getAll);
 router.get('/current', getCurrent);
 router.get('/:id', getById);
@@ -9,6 +11,29 @@ router.put('/:id', update);
 router.delete('/:id', _delete);
 
 module.exports = router;
+
+function authenticate(req, res, next) {
+	userService
+		.authenticate(req.body)
+		.then((user) => {
+			if (user) {
+				console.log(res.json(user));
+				return res.json(user);
+			} else {
+				return res
+					.status(400)
+					.json({ message: 'Username or password is incorrect' });
+			}
+		})
+		.catch((err) => next(err));
+}
+
+function register(req, res, next) {
+	userService
+		.create(req.body)
+		.then(() => res.json({}))
+		.catch((err) => next(err));
+}
 
 function getAll(req, res, next) {
 	userService

@@ -11,12 +11,12 @@ function jwt() {
 	});
 }
 
-async function isRevoked(req, payload, done) {
-	const user = await userService.getById(payload.sub);
+async function isRevoked(req, res) {
+	const user = await userService.getById(res.payload.sub);
 
 	if (!user) {
-		return done(null, true);
+		throw new Error({name: 'UnauthorizedError'});
 	}
-
-	done();
 }
+
+
